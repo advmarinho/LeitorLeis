@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Leitura de Leis - Projeto Moderno</title>
+  
+  <!-- Estilos do seu projeto -->
+  <style>
+    /* Estilos globais */
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f5f5f5;
+      font-family: Arial, sans-serif;
+      color: #333;
+      scroll-behavior: smooth;
+    }
+    header {
+      background: #333;
+      color: #fff;
+      padding: 1em;
+      text-align: center;
+    }
+    main {
+      max-width: 800px;
+      margin: 70px auto 80px;
+      padding: 0 10px;
+    }
+    h1, h2, h3 {
+      margin-top: 0;
+    }
+    /* Cards */
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    /* Overlay de Instruções */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+    .instructions-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      max-width: 600px;
+      width: 90%;
+      text-align: left;
+    }
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      background: #007BFF;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    /* MENU LATERAL FIXO */
+    #menu-toggle-btn {
+      position: fixed;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      background: #007BFF;
+      color: #fff;
+      padding: 10px;
+      border-radius: 0 4px 4px 0;
+      cursor: pointer;
+      z-index: 2500;
+    }
+    #articles-menu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 280px;
+      height: 100vh;
+      background: #007BFF;
+      color: #fff;
+      padding: 10px;
+      box-sizing: border-box;
+      transition: transform 0.3s ease;
+      z-index: 2000;
+      overflow: hidden;
+    }
+    #articles-menu.closed {
+      transform: translateX(-280px);
+    }
+    .menu-header {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 10px;
+    }
+    .menu-header button {
+      background: #333;
+      color: #fff;
+      border-radius: 4px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    .menu-content {
+      display: flex;
+      flex-direction: column;
+      height: calc(100% - 40px);
+    }
+    .arrow {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 18px;
+      padding: 5px;
+      cursor: pointer;
+    }
+    .articles-list {
+      flex: 1;
+      overflow-y: auto;
+      margin: 5px 0;
+    }
+    .menu-item {
+      border-bottom: 1px solid rgba(255,255,255,0.3);
+      padding: 8px 0;
+      display: block;
+      text-decoration: none;
+      color: #fff;
+      font-weight: bold;
+    }
+    .summary {
+      display: block;
+      font-weight: normal;
+      font-size: 0.9em;
+      margin-left: 5px;
+      opacity: 0.8;
+    }
+    /* Área de Leis */
+    .law-text {
+      line-height: 1.6;
+      font-size: 16px;
+      white-space: pre-wrap;
+    }
+    /* Tooltip dinâmico */
+    .custom-tooltip {
+      position: absolute;
+      background: #333;
+      color: #fff;
+      padding: 10px;
+      border-radius: 4px;
+      max-width: 80vw;
+      max-height: 80vh;
+      overflow-y: auto;
+      z-index: 1500;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .custom-tooltip .tooltip-content {
+      margin-bottom: 5px;
+    }
+    .custom-tooltip .copy-button {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 3px;
+      background: #007BFF;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+    .file-input-container {
+      margin-top: 10px;
+    }
+    .file-input-container label {
+      font-weight: bold;
+    }
+    /* Anotador */
+    textarea#notes {
+      width: 100%;
+      height: 150px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 10px;
+      font-size: 14px;
+      resize: vertical;
+      margin-bottom: 10px;
+    }
+    .buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .back-button {
+      margin-top: 10px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      background: #28a745;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.9em;
+      transition: background 0.3s ease;
+    }
+    .back-button:hover {
+      background: #218838;
+    }
+    /* Glossário */
+    #glossary-section {
+      margin-top: 40px;
+    }
+    #glossary-section h2 {
+      text-align: center;
+    }
+    #glossary-content {
+      column-count: 3;
+      column-gap: 20px;
+      padding: 10px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    #glossary-content ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    #glossary-content li {
+      margin-bottom: 5px;
+    }
+    /* Leitor de Texto */
+    #reader-section {
+      margin-bottom: 20px;
+    }
+    #reader-section .card {
+      text-align: center;
+    }
+    #reader-section label {
+      font-weight: bold;
+    }
+    #reader-section input[type="range"] {
+      width: 100%;
+      margin: 10px 0;
+    }
+  </style>
+
+  <!-- Incluindo os arquivos da lib Read Aloud -->
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/common.css">
+  <script src="js/rxjs.umd.min.js"></script>
+  <script src="js/jquery-3.7.1.min.js"></script>
+  <script src="js/peerjs.min.js"></script>
+  <script src="js/defaults.js"></script>
+  <script src="js/messaging.js"></script>
+  <script src="js/google-translate.js"></script>
+  <script src="js/aws-sdk.js"></script>
+  <script src="js/tts-engines.js"></script>
+  <script src="js/speech.js"></script>
+  <script src="js/document.js"></script>
+  <script src="js/player.js"></script>
+  
+</head>
+<body>
+  <!-- Botão para abrir/fechar o menu -->
+  <div id="menu-toggle-btn">Menu</div>
+
+  <!-- Menu Lateral -->
+  <div id="articles-menu" class="closed">
+    <div class="menu-header">
+      <button id="close-menu-btn">Fechar</button>
+    </div>
+    <div class="menu-content">
+      <button class="arrow" id="arrowUp">▲</button>
+      <div class="articles-list" id="articlesList">
+        <!-- Itens do menu gerados dinamicamente -->
+      </div>
+      <button class="arrow" id="arrowDown">▼</button>
+    </div>
+  </div>
+
+  <!-- Overlay de Instruções -->
+  <div id="instructions-overlay" class="overlay">
+    <div class="card instructions-card">
+      <h2>Instruções do Sistema</h2>
+      <p>Este sistema processa o texto da lei importado via arquivo TXT conforme as regras abaixo:</p>
+      <ul>
+        <li>Ao importar, todo trecho de uma linha que iniciar com "(" até o fim, <strong>apenas se houver um espaço antes</strong>, será removido.</li>
+        <li>Referências do tipo <strong>art. X[, Y]</strong> serão convertidas em links com tooltip exibindo o texto completo do artigo.</li>
+        <li>Ao clicar em uma referência, a página fará scroll até a seção de detalhes do artigo e, com o botão "Voltar", retornará à posição de origem.</li>
+        <li>Utilize o anotador para salvar, exportar e importar suas anotações.</li>
+      </ul>
+      <button id="startButton">Entendi, Iniciar</button>
+    </div>
+  </div>
+  
+  <header>
+    <h1>Projeto de Leitura de Leis</h1>
+  </header>
+  
+  <main>
+    <!-- 1) Área das Leis (conteúdo importado) -->
+    <section id="laws-section">
+      <h2>Importar arquivo .txt com as leis:</h2>
+      <div class="card" id="law-card">
+        <div class="file-input-container">
+          <label for="txtFile">Escolher arquivo</label>
+          <input type="file" id="txtFile" accept=".txt">
+        </div>
+        <div id="law-text" class="law-text" style="margin-top:20px;">
+          <!-- O conteúdo do arquivo TXT será carregado aqui -->
+        </div>
+      </div>
+    </section>
+    
+    <!-- 2) Leitor de Texto -->
+    <section id="reader-section">
+      <h2>Leitor de Texto</h2>
+      <div class="card">
+        <!-- O slider de velocidade é mantido apenas para exibição -->
+        <label for="speechSpeed">Velocidade: <span id="speedDisplay">1.0</span></label>
+        <input type="range" id="speechSpeed" min="0.5" max="2.0" step="0.1" value="1.0">
+        <div class="buttons">
+          <button id="startReading">Iniciar Leitura</button>
+          <button id="pauseReading">Pausar</button>
+          <button id="resumeReading">Continuar</button>
+          <button id="stopReading">Parar</button>
+          <button id="readSelection">Ler Seleção</button>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 3) Seção do Anotador -->
+    <section id="notes-section">
+      <h2>Anotador</h2>
+      <div class="card">
+        <textarea id="notes" placeholder="Escreva suas anotações aqui..."></textarea>
+        <div class="buttons">
+          <button id="saveNotes">Salvar Anotações</button>
+          <button id="exportNotes">Exportar JSON</button>
+          <button id="importNotes">Importar JSON</button>
+          <input type="file" id="importNotesFile" accept=".json" style="display: none;">
+        </div>
+      </div>
+    </section>
+    
+    <!-- 4) Seção de Detalhes dos Artigos -->
+    <section id="articles-section">
+      <h2>Detalhes dos Artigos Referenciados</h2>
+      <div id="articles-container" class="card">
+        <!-- Blocos dos artigos serão inseridos aqui -->
+      </div>
+    </section>
+    
+    <!-- 5) Seção do Glossário -->
+    <section id="glossary-section">
+      <h2>Glossário</h2>
+      <div id="glossary-content" class="card">
+        <!-- Lista de palavras será gerada aqui -->
+      </div>
+    </section>
+  </main>
+  
+  <footer style="background: #333; color: #fff; text-align: center; padding: 10px; position: fixed; bottom: 0; width: 100%;">
+    <p>By Anderson Marinho</p>
+    <p>
+      <a href="https://github.com/advmarinho" target="_blank" style="color: #fff; text-decoration: none;">
+        <img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" alt="GitHub" style="width: 16px; vertical-align: middle;"> GitHub: advmarinho
+      </a> | 
+      <a href="https://x.com/igarape_digital" target="_blank" style="color: #fff; text-decoration: none;">
+        <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="X" style="width: 16px; vertical-align: middle;"> X: igarape_digital
+      </a>
+    </p>
+  </footer>
+  
+  <script>
+    // ------------------------------
+    // Controle do TTS utilizando a lib "Read Aloud" (player)
+    // ------------------------------
+    
+    // Assumindo que o objeto 'player' esteja disponível pelos scripts importados.
+    const speedSlider = document.getElementById('speechSpeed');
+    const speedDisplay = document.getElementById('speedDisplay');
+    const startReadingBtn = document.getElementById('startReading');
+    const pauseReadingBtn = document.getElementById('pauseReading');
+    const resumeReadingBtn = document.getElementById('resumeReading');
+    const stopReadingBtn = document.getElementById('stopReading');
+    const readSelectionBtn = document.getElementById('readSelection');
+    
+    // Atualiza a exibição do slider (a velocidade pode não ser aplicada se a lib não suportar customização)
+    speedSlider.addEventListener('input', function() {
+      speedDisplay.innerText = this.value;
+    });
+    
+    // Iniciar a leitura do texto completo das leis
+    startReadingBtn.addEventListener('click', function() {
+      const lawTextElem = document.getElementById('law-text');
+      const text = lawTextElem.innerText;
+      if (text.trim() === "") {
+        alert("Não há texto para ler! Certifique-se de carregar um arquivo .txt com o conteúdo da lei.");
+        return;
+      }
+      // Chama o método do player para ler o texto
+      player.play(text);
+    });
+    
+    // Pausar a leitura
+    pauseReadingBtn.addEventListener('click', function() {
+      player.pause();
+    });
+    
+    // Continuar a leitura
+    resumeReadingBtn.addEventListener('click', function() {
+      player.resume();
+    });
+    
+    // Parar a leitura
+    stopReadingBtn.addEventListener('click', function() {
+      player.stop();
+    });
+    
+    // Ler somente o texto selecionado
+    readSelectionBtn.addEventListener('click', function() {
+      const selection = window.getSelection().toString().trim();
+      if (!selection) {
+        alert("Nenhum texto selecionado.");
+        return;
+      }
+      player.play(selection);
+    });
+    
+    // ------------------------------
+    // Fim do controle do TTS
+    // ------------------------------
+    
+    
+    // As demais funções (processamento do texto, extração de artigos, tooltip, menu, anotador, etc.) permanecem conforme sua implementação original:
+    
+    let lastScrollPosition = 0; // Guarda a posição de origem do clique
+    
+    function cleanText(text) {
+      return text.split('\n').map(line =>
+        line.replace(/\s+\([^)]*\)\s*$/i, '')
+      ).join('\n');
+    }
+    
+    function extractArticles(text) {
+      const articles = {};
+      const parts = text.split(/(?=Art\.\s*\d+)/);
+      parts.forEach(part => {
+        part = part.trim();
+        if (part.startsWith("Art.")) {
+          const match = part.match(/^Art\.\s*(\d+)/);
+          if (match) {
+            const number = match[1];
+            articles[number] = part;
+          }
+        }
+      });
+      return articles;
+    }
+    
+    function formatArticleText(text) {
+      text = text.replace(/\r\n/g, " ").replace(/\n+/g, " ").trim();
+      const paragraphs = text.split(/;\s*/);
+      return paragraphs.map(p => "<p>" + p.trim() + "</p>").join("");
+    }
+    
+    function getArticleSummary(text) {
+      let cleaned = text.replace(/^Art\.\s*\d+\s*/, '');
+      let words = cleaned.split(/\s+/);
+      if (words.length > 20) {
+        return words.slice(0, 20).join(" ") + "...";
+      }
+      return cleaned;
+    }
+    
+    function generateGlossary(text) {
+      const stopwords = [
+        "e","de","do","da","dos","das","a","o","as","os","em","no","na","nos","nas",
+        "para","com","um","uma","uns","umas","por","que","se","é","como","mas","ou",
+        "não","ao","à","pelo","pela","pelos","pelas","sobre","entre","até","após",
+        "antes","depois"
+      ];
+      let cleanedText = text.toLowerCase().replace(/[\.,;:?!()"\-—\[\]]/g, " ");
+      let words = cleanedText.split(/\s+/).filter(Boolean);
+      let filtered = words.filter(word => !stopwords.includes(word));
+      let unique = Array.from(new Set(filtered));
+      unique.sort();
+      return unique;
+    }
+    
+    function populateGlossary(glossaryWords) {
+      const glossaryContainer = document.getElementById('glossary-content');
+      let html = "<ul>";
+      glossaryWords.forEach(word => {
+        html += `<li>${word}</li>`;
+      });
+      html += "</ul>";
+      glossaryContainer.innerHTML = html;
+    }
+    
+    function navigateToArticle(targetId, event) {
+      event.preventDefault();
+      lastScrollPosition = window.pageYOffset;
+      const targetElem = document.getElementById(targetId);
+      if (targetElem) {
+        targetElem.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+    
+    let tooltipElem = null;
+    function showTooltip(target, text) {
+      hideTooltip();
+      tooltipElem = document.createElement('div');
+      tooltipElem.className = 'custom-tooltip';
+      
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'tooltip-content';
+      contentDiv.innerHTML = formatArticleText(text);
+      tooltipElem.appendChild(contentDiv);
+      
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'copy-button';
+      copyBtn.innerText = 'Copiar';
+      copyBtn.addEventListener('click', function(e) {
+        navigator.clipboard.writeText(text).then(() => {
+          copyBtn.innerText = 'Copiado!';
+          setTimeout(() => copyBtn.innerText = 'Copiar', 2000);
+        });
+        e.stopPropagation();
+      });
+      tooltipElem.appendChild(copyBtn);
+      
+      document.body.appendChild(tooltipElem);
+      
+      const rect = target.getBoundingClientRect();
+      const tooltipRect = tooltipElem.getBoundingClientRect();
+      let top = rect.bottom + window.scrollY + 5;
+      let left = rect.left + window.scrollX;
+      if (left + tooltipRect.width > window.innerWidth) {
+        left = window.innerWidth - tooltipRect.width - 10;
+      }
+      tooltipElem.style.top = top + 'px';
+      tooltipElem.style.left = left + 'px';
+    }
+    
+    function hideTooltip() {
+      if (tooltipElem) {
+        tooltipElem.remove();
+        tooltipElem = null;
+      }
+    }
+    
+    function processLawText(articlesExtracted) {
+      const container = document.getElementById('law-text');
+      let html = container.innerHTML;
+      const referenced = new Set();
+      const regex = /art\.?\s*([0-9]+)(?:,\s*[XVI]+)?/gi;
+      html = html.replace(regex, (match, p1) => {
+        const id = "art" + p1;
+        if (articlesExtracted[p1]) {
+          referenced.add(p1);
+          return `<a class="tooltip" data-tooltip="${articlesExtracted[p1]}" href="#${id}">${match}</a>`;
+        } else {
+          return `<span class="tooltip" data-tooltip="Detalhes não encontrados.">${match}</span>`;
+        }
+      });
+      container.innerHTML = html;
+      
+      const tooltipLinks = container.getElementsByClassName('tooltip');
+      Array.from(tooltipLinks).forEach(link => {
+        link.addEventListener('mouseenter', function() {
+          const tipText = link.getAttribute('data-tooltip');
+          showTooltip(link, tipText);
+        });
+        link.addEventListener('mouseleave', function() {
+          setTimeout(() => {
+            if (!tooltipElem || !tooltipElem.matches(':hover')) {
+              hideTooltip();
+            }
+          }, 300);
+        });
+        link.addEventListener('click', function(e) {
+          navigateToArticle(link.getAttribute('href').substring(1), e);
+        });
+      });
+      
+      return referenced;
+    }
+    
+    function populateArticlesSection(referenced, articlesExtracted) {
+      const container = document.getElementById('articles-container');
+      container.innerHTML = "";
+      referenced.forEach(num => {
+        const id = "art" + num;
+        const articleText = articlesExtracted[num];
+        if (articleText) {
+          const div = document.createElement('div');
+          div.id = id;
+          div.style.marginBottom = "20px";
+          const h3 = document.createElement('h3');
+          h3.innerText = "Art. " + num;
+          const p = document.createElement('p');
+          p.innerHTML = formatArticleText(articleText);
+          div.appendChild(h3);
+          div.appendChild(p);
+          const backBtn = document.createElement('button');
+          backBtn.className = 'back-button';
+          backBtn.innerText = 'Voltar';
+          backBtn.addEventListener('click', function() {
+            window.scrollTo({ top: lastScrollPosition, behavior: 'smooth' });
+          });
+          div.appendChild(backBtn);
+          container.appendChild(div);
+        }
+      });
+    }
+    
+    function populateArticlesMenu(articlesExtracted) {
+      const articlesList = document.getElementById('articlesList');
+      articlesList.innerHTML = "";
+      const fixedSections = [
+        { id: "laws-section", title: "Importar Leis" },
+        { id: "reader-section", title: "Leitor de Texto" },
+        { id: "notes-section", title: "Anotador" },
+        { id: "articles-section", title: "Artigos" },
+        { id: "glossary-section", title: "Glossário" },
+      ];
+      fixedSections.forEach(section => {
+        const link = document.createElement('a');
+        link.className = 'menu-item';
+        link.href = `#${section.id}`;
+        link.innerText = section.title;
+        link.addEventListener('click', function(e) {
+          navigateToArticle(section.id, e);
+        });
+        articlesList.appendChild(link);
+      });
+      Object.keys(articlesExtracted).sort((a, b) => Number(a) - Number(b)).forEach(num => {
+        const articleText = articlesExtracted[num];
+        const summary = getArticleSummary(articleText);
+        const link = document.createElement('a');
+        link.className = 'menu-item';
+        link.href = "#art" + num;
+        link.innerText = "Art. " + num;
+        link.addEventListener('click', function(e) {
+          navigateToArticle(link.getAttribute('href').substring(1), e);
+        });
+        const spanSummary = document.createElement('span');
+        spanSummary.className = 'summary';
+        spanSummary.innerText = summary;
+        link.appendChild(spanSummary);
+        articlesList.appendChild(link);
+      });
+    }
+    
+    const menuToggleBtn = document.getElementById('menu-toggle-btn');
+    const articlesMenu = document.getElementById('articles-menu');
+    const closeMenuBtn = document.getElementById('close-menu-btn');
+    const arrowUp = document.getElementById('arrowUp');
+    const arrowDown = document.getElementById('arrowDown');
+    const articlesListElem = document.getElementById('articlesList');
+    
+    menuToggleBtn.addEventListener('click', () => {
+      articlesMenu.classList.toggle('closed');
+    });
+    closeMenuBtn.addEventListener('click', () => {
+      articlesMenu.classList.add('closed');
+    });
+    arrowUp.addEventListener('click', () => {
+      articlesListElem.scrollBy({ top: -100, behavior: 'smooth' });
+    });
+    arrowDown.addEventListener('click', () => {
+      articlesListElem.scrollBy({ top: 100, behavior: 'smooth' });
+    });
+    
+    document.getElementById('startButton').addEventListener('click', function() {
+      document.getElementById('instructions-overlay').style.display = 'none';
+    });
+    
+    document.getElementById('txtFile').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          let text = e.target.result;
+          console.log("Arquivo carregado:", text);
+          text = cleanText(text);
+          document.getElementById('law-text').innerText = text;
+    
+          const articlesExtracted = extractArticles(text);
+          const referenced = processLawText(articlesExtracted);
+          populateArticlesSection(referenced, articlesExtracted);
+          populateArticlesMenu(articlesExtracted);
+    
+          const glossaryWords = generateGlossary(text);
+          populateGlossary(glossaryWords);
+        };
+        reader.readAsText(file, 'UTF-8');
+      }
+    });
+    
+    function loadNotes() {
+      const notes = localStorage.getItem('notes');
+      if (notes) {
+        document.getElementById('notes').value = notes;
+      }
+    }
+    document.getElementById('saveNotes').addEventListener('click', function() {
+      const notesValue = document.getElementById('notes').value;
+      localStorage.setItem('notes', notesValue);
+      alert('Anotações salvas com sucesso!');
+    });
+    document.getElementById('exportNotes').addEventListener('click', function() {
+      const notesValue = document.getElementById('notes').value;
+      const data = { notes: notesValue };
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'notes.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+    document.getElementById('importNotes').addEventListener('click', function() {
+      document.getElementById('importNotesFile').click();
+    });
+    document.getElementById('importNotesFile').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const data = JSON.parse(e.target.result);
+            if (data.notes !== undefined) {
+              document.getElementById('notes').value = data.notes;
+              localStorage.setItem('notes', data.notes);
+              alert('Anotações importadas com sucesso!');
+            } else {
+              alert('JSON inválido: propriedade "notes" não encontrada.');
+            }
+          } catch (error) {
+            alert('Erro ao ler o JSON.');
+          }
+        };
+        reader.readAsText(file);
+      }
+    });
+    
+    document.addEventListener("DOMContentLoaded", function() {
+      loadNotes();
+    });
+    
+    document.addEventListener('mousemove', function(e) {
+      if (tooltipElem && !tooltipElem.matches(':hover') && !e.target.classList.contains('tooltip')) {
+        hideTooltip();
+      }
+    });
+    
+  </script>
+</body>
+</html>
+  
